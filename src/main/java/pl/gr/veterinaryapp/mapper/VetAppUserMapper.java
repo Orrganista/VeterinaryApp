@@ -17,7 +17,7 @@ public interface VetAppUserMapper {
             @Mapping(source = "username", target = "username"),
             @Mapping(source = "role.id", target = "role")
     })
-    UserDto map(VetAppUser pet);
+    UserDto toUserDto(VetAppUser pet);
 
-    List<UserDto> mapAsList(Collection<VetAppUser> users);
+    List<UserDto> toUserDtos(Collection<VetAppUser> users);
 }

@@ -14,14 +14,14 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface ClientMapper {
 
-    Client map(ClientRequestDto clientRequestDto);
+    Client toClient(ClientRequestDto clientRequestDto);
 
     @Mappings({
             @Mapping(source = "name", target = "name"),
             @Mapping(source = "surname", target = "surname"),
             @Mapping(source = "user.username", target = "username")
     })
-    ClientResponseDto map(Client client);
+    ClientResponseDto toClientResponseDto(Client client);
 
-    List<ClientResponseDto> mapAsList(Collection<Client> clients);
+    List<ClientResponseDto> toClientResponseDtos(Collection<Client> clients);
 }

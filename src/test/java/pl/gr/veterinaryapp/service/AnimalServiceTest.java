@@ -76,7 +76,7 @@ class AnimalServiceTest {
         animal.setSpecies("test");
 
         when(animalRepository.findBySpecies(anyString())).thenReturn(Optional.empty());
-        when(mapper.map(any(AnimalRequestDto.class))).thenReturn(animal);
+        when(mapper.toAnimal(any(AnimalRequestDto.class))).thenReturn(animal);
         when(animalRepository.save(any(Animal.class))).thenReturn(animal);
 
         var result = animalService.createAnimal(animalDTO);
@@ -87,7 +87,7 @@ class AnimalServiceTest {
 
         verify(animalRepository).save(eq(animal));
         verify(animalRepository).findBySpecies(eq("test"));
-        verify(mapper).map(eq(animalDTO));
+        verify(mapper).toAnimal(eq(animalDTO));
     }
 
     @Test

@@ -14,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import pl.gr.veterinaryapp.common.OperationType;
@@ -112,7 +111,7 @@ class VisitRestControllerTest {
         Visit visit = new Visit();
 
         when(visitService.getVisitById(any(User.class), anyLong())).thenReturn(visit);
-        when(visitMapper.map(any(Visit.class))).thenReturn(visitResponse);
+        when(visitMapper.toVisitResponseDto(any(Visit.class))).thenReturn(visitResponse);
 
         var resultActions = mockMvc.perform(get("/api/visits/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON));
@@ -120,7 +119,7 @@ class VisitRestControllerTest {
         verifyJson(resultActions, visitResponse);
 
         verify(visitService).getVisitById(any(User.class), eq(id));
-        verify(visitMapper).map(eq(visit));
+        verify(visitMapper).toVisitResponseDto(eq(visit));
     }
 
     @ParameterizedTest
@@ -156,7 +155,7 @@ class VisitRestControllerTest {
         var visit = new Visit();
 
         when(visitService.createVisit(any(User.class), any(VisitRequestDto.class))).thenReturn(visit);
-        when(visitMapper.map(any(Visit.class))).thenReturn(visitResponse);
+        when(visitMapper.toVisitResponseDto(any(Visit.class))).thenReturn(visitResponse);
 
         var resultActions = mockMvc.perform(post("/api/visits")
                 .with(csrf())
@@ -166,7 +165,7 @@ class VisitRestControllerTest {
         verifyJson(resultActions, visitResponse);
 
         verify(visitService).createVisit(any(User.class), eq(visitRequest));
-        verify(visitMapper).map(eq(visit));
+        verify(visitMapper).toVisitResponseDto(eq(visit));
     }
 
     @ParameterizedTest
@@ -193,7 +192,7 @@ class VisitRestControllerTest {
         List<VisitResponseDto> visits = List.of(visitResponse, visitResponse);
 
         when(visitService.getAllVisits(any(User.class))).thenReturn(Collections.emptyList());
-        when(visitMapper.mapAsList(anyList())).thenReturn(visits);
+        when(visitMapper.toVisitResponseDtos(anyList())).thenReturn(visits);
 
         var resultActions = mockMvc.perform(get("/api/visits")
                 .contentType(MediaType.APPLICATION_JSON));
@@ -203,7 +202,7 @@ class VisitRestControllerTest {
         }
 
         verify(visitService).getAllVisits(any(User.class));
-        verify(visitMapper).mapAsList(Collections.emptyList());
+        verify(visitMapper).toVisitResponseDtos(Collections.emptyList());
     }
 
     @Test
@@ -227,7 +226,7 @@ class VisitRestControllerTest {
                 .build();
 
         when(visitService.finalizeVisit(any(VisitEditDto.class))).thenReturn(visit);
-        when(visitMapper.map(any(Visit.class))).thenReturn(visitResponse);
+        when(visitMapper.toVisitResponseDto(any(Visit.class))).thenReturn(visitResponse);
 
         var resultActions = mockMvc.perform(patch("/api/visits")
                 .with(csrf())
@@ -237,7 +236,7 @@ class VisitRestControllerTest {
         verifyJson(resultActions, visitResponse);
 
         verify(visitService).finalizeVisit(eq(visitEditDto));
-        verify(visitMapper).map(eq(visit));
+        verify(visitMapper).toVisitResponseDto(eq(visit));
     }
 
     @Test

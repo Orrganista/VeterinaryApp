@@ -45,7 +45,7 @@ public class ClientServiceImpl implements ClientService {
         VetAppUser user = userRepository.findByUsername(clientRequestDTO.getUsername())
                 .orElse(null);
 
-        Client client = mapper.map(clientRequestDTO);
+        Client client = mapper.toClient(clientRequestDTO);
         client.setUser(user);
 
         return clientRepository.save(client);

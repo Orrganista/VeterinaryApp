@@ -34,7 +34,7 @@ public class AnimalServiceImpl implements AnimalService {
             throw new IncorrectDataException("Species exists.");
         }
 
-        return animalRepository.save(mapper.map(animalRequestDto));
+        return animalRepository.save(mapper.toAnimal(animalRequestDto));
     }
 
     @Transactional

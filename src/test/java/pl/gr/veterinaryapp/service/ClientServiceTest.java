@@ -81,7 +81,7 @@ class ClientServiceTest {
         client.setName(CLIENT_NAME);
         client.setSurname(CLIENT_SURNAME);
 
-        when(mapper.map(any(ClientRequestDto.class))).thenReturn(client);
+        when(mapper.toClient(any(ClientRequestDto.class))).thenReturn(client);
         when(clientRepository.save(any(Client.class))).thenReturn(client);
 
         var result = clientService.createClient(clientDTO);
@@ -91,7 +91,7 @@ class ClientServiceTest {
                 .isEqualTo(client);
 
         verify(clientRepository).save(eq(client));
-        verify(mapper).map(eq(clientDTO));
+        verify(mapper).toClient(eq(clientDTO));
     }
 
     @Test

@@ -92,7 +92,7 @@ public class VetServiceTest {
         vet.setName("test");
         vet.setSurname("test");
 
-        when(mapper.map(any(VetRequestDto.class))).thenReturn(vet);
+        when(mapper.toVet(any(VetRequestDto.class))).thenReturn(vet);
         when(vetRepository.save(any(Vet.class))).thenReturn(vet);
 
         var result = vetService.createVet(request);
@@ -102,7 +102,7 @@ public class VetServiceTest {
                 .isEqualTo(vet);
 
         verify(vetRepository).save(eq(vet));
-        verify(mapper).map(request);
+        verify(mapper).toVet(request);
     }
 
     @Test

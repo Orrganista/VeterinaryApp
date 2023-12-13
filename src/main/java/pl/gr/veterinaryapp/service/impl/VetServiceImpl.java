@@ -37,7 +37,7 @@ public class VetServiceImpl implements VetService {
         if (vetRequestDTO.getSurname() == null || vetRequestDTO.getName() == null) {
             throw new IncorrectDataException("Name and Surname cannot be null.");
         }
-        return vetRepository.save(mapper.map(vetRequestDTO));
+        return vetRepository.save(mapper.toVet(vetRequestDTO));
     }
 
     @Transactional
