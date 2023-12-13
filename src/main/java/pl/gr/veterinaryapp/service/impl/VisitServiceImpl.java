@@ -1,6 +1,7 @@
 package pl.gr.veterinaryapp.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -35,6 +36,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class VisitServiceImpl implements VisitService {
 
     private static final int MINIMAL_TIME_TO_VISIT = 60;
@@ -53,7 +55,7 @@ public class VisitServiceImpl implements VisitService {
         if (!isUserAuthorized(user, visit.getPet().getClient())) {
             throw new ResourceNotFoundException("Wrong id.");
         }
-
+        log.info("Retrieved visit with ID: {}.", visit.getId());
         return visit;
     }
 
@@ -101,7 +103,7 @@ public class VisitServiceImpl implements VisitService {
         newVisit.setVisitStatus(VisitStatus.SCHEDULED);
         newVisit.setOperationType(visitRequestDto.getOperationType());
         newVisit.setTreatmentRoom(treatmentRoom);
-
+        log.info("Created visit with ID: {}.", newVisit.getId());
         return visitRepository.save(newVisit);
     }
 
@@ -148,6 +150,7 @@ public class VisitServiceImpl implements VisitService {
             visit.setVisitStatus(visitEditDto.getVisitStatus());
         }
         visit.setVisitDescription(visitEditDto.getDescription());
+        log.info("Finalized visit with ID: {}.", visit.getId());
         return visit;
     }
 
@@ -157,6 +160,7 @@ public class VisitServiceImpl implements VisitService {
         Visit result = visitRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
         visitRepository.delete(result);
+        log.info("Deleted visit with ID: {}.", result.getId());
     }
 
     @Transactional
