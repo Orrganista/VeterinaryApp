@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @Service
 public class VisitServiceImpl implements VisitService {
 
-    private static final int MINIMAL_TIME_TO_VISIT = 60;
+    private static final int MINIMAL_TIME_TO_VISIT = 30;
 
     private final VisitRepository visitRepository;
     private final VetRepository vetRepository;
