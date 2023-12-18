@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.gr.veterinaryapp.exception.IncorrectDataException;
 import pl.gr.veterinaryapp.exception.ResourceNotFoundException;
+import pl.gr.veterinaryapp.mapper.VetAppUserMapper;
 import pl.gr.veterinaryapp.model.dto.UserDto;
 import pl.gr.veterinaryapp.model.entity.Role;
 import pl.gr.veterinaryapp.model.entity.VetAppUser;
@@ -15,27 +16,31 @@ import pl.gr.veterinaryapp.service.UserService;
 
 import java.util.List;
 
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder encoder;
+    private final VetAppUserMapper vetAppUserMapper;
 
     @Override
-    public List<VetAppUser> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getAllUsers() {
+        List<VetAppUser> users = userRepository.findAll();
+        return vetAppUserMapper.toUserDtos(users);
     }
 
     @Override
-    public VetAppUser getUser(long id) {
-        return userRepository.findById(id)
+    public UserDto getUser(long id) {
+        VetAppUser user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+        return vetAppUserMapper.toUserDto(user);
     }
 
     @Override
     @Transactional
-    public VetAppUser createUser(UserDto user) {
+    public UserDto createUser(UserDto user) {
         userRepository.findByUsername(user.getUsername())
                 .ifPresent(u -> {
                     throw new IncorrectDataException("Username exists.");
@@ -44,7 +49,8 @@ public class UserServiceImpl implements UserService {
         newVetAppUser.setUsername(user.getUsername());
         newVetAppUser.setPassword(encoder.encode(user.getPassword()));
         newVetAppUser.setRole(new Role(user.getRole()));
-        return userRepository.save(newVetAppUser);
+        VetAppUser createdUser = userRepository.save(newVetAppUser);
+        return vetAppUserMapper.toUserDto(createdUser);
     }
 
     @Override

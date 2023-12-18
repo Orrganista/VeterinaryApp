@@ -7,6 +7,7 @@ import pl.gr.veterinaryapp.exception.IncorrectDataException;
 import pl.gr.veterinaryapp.exception.ResourceNotFoundException;
 import pl.gr.veterinaryapp.mapper.VetMapper;
 import pl.gr.veterinaryapp.model.dto.VetRequestDto;
+import pl.gr.veterinaryapp.model.dto.VetResponseDto;
 import pl.gr.veterinaryapp.model.entity.Vet;
 import pl.gr.veterinaryapp.repository.VetRepository;
 import pl.gr.veterinaryapp.service.VetService;
@@ -18,26 +19,29 @@ import java.util.List;
 public class VetServiceImpl implements VetService {
 
     private final VetRepository vetRepository;
-    private final VetMapper mapper;
+    private final VetMapper vetMapper;
 
     @Override
-    public Vet getVetById(long id) {
-        return vetRepository.findById(id)
+    public VetResponseDto getVetById(long id) {
+        Vet vet = vetRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+        return vetMapper.toVetResponseDto(vet);
     }
 
     @Override
-    public List<Vet> getAllVets() {
-        return vetRepository.findAll();
+    public List<VetResponseDto> getAllVets() {
+        List<Vet> vets = vetRepository.findAll();
+        return vetMapper.toVetResponseDtos(vets);
     }
 
     @Transactional
     @Override
-    public Vet createVet(VetRequestDto vetRequestDTO) {
+    public VetResponseDto createVet(VetRequestDto vetRequestDTO) {
         if (vetRequestDTO.getSurname() == null || vetRequestDTO.getName() == null) {
             throw new IncorrectDataException("Name and Surname cannot be null.");
         }
-        return vetRepository.save(mapper.toVet(vetRequestDTO));
+        Vet createdVet = vetRepository.save(vetMapper.toVet(vetRequestDTO));
+        return vetMapper.toVetResponseDto(createdVet);
     }
 
     @Transactional

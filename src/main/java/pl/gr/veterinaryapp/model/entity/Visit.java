@@ -2,12 +2,13 @@ package pl.gr.veterinaryapp.model.entity;
 
 import com.vladmihalcea.hibernate.type.interval.PostgreSQLIntervalType;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Setter;
 import org.hibernate.annotations.TypeDef;
-import pl.gr.veterinaryapp.common.OperationType;
-import pl.gr.veterinaryapp.common.VisitStatus;
-import pl.gr.veterinaryapp.common.VisitType;
+import pl.gr.veterinaryapp.model.type.OperationType;
+import pl.gr.veterinaryapp.model.type.VisitStatus;
+import pl.gr.veterinaryapp.model.type.VisitType;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,6 +25,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 
 @Data
+@Builder
 @Entity
 @Table(name = "visits")
 @TypeDef(

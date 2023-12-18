@@ -1,4 +1,4 @@
-package pl.gr.veterinaryapp.common;
+package pl.gr.veterinaryapp.model.type;
 
 public enum VisitStatus {
     SCHEDULED,

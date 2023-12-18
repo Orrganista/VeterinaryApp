@@ -7,9 +7,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
-import pl.gr.veterinaryapp.common.OperationType;
-import pl.gr.veterinaryapp.common.VisitStatus;
-import pl.gr.veterinaryapp.common.VisitType;
+import pl.gr.veterinaryapp.model.type.OperationType;
+import pl.gr.veterinaryapp.model.type.VisitStatus;
+import pl.gr.veterinaryapp.model.type.VisitType;
 
 import java.math.BigDecimal;
 import java.time.Duration;

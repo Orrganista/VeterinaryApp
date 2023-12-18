@@ -4,6 +4,7 @@ import org.springframework.security.core.userdetails.User;
 import pl.gr.veterinaryapp.model.dto.AvailableVisitDto;
 import pl.gr.veterinaryapp.model.dto.VisitEditDto;
 import pl.gr.veterinaryapp.model.dto.VisitRequestDto;
+import pl.gr.veterinaryapp.model.dto.VisitResponseDto;
 import pl.gr.veterinaryapp.model.entity.Visit;
 
 import java.time.OffsetDateTime;
@@ -14,13 +15,13 @@ public interface VisitService {
 
     void deleteVisit(long id);
 
-    List<Visit> getAllVisits(User user);
+    List<VisitResponseDto> getAllVisits(User user);
 
-    Visit createVisit(User user, VisitRequestDto visitRequestDto);
+    VisitResponseDto createVisit(User user, VisitRequestDto visitRequestDto);
 
-    Visit finalizeVisit(VisitEditDto visitEditDto);
+    VisitResponseDto finalizeVisit(VisitEditDto visitEditDto);
 
-    Visit getVisitById(User user, long id);
+    VisitResponseDto getVisitById(User user, long id);
 
     List<AvailableVisitDto> getAvailableVisits(
             OffsetDateTime startDateTime,

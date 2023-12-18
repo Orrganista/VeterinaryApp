@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pl.gr.veterinaryapp.common.OperationType;
-import pl.gr.veterinaryapp.common.VisitType;
+import pl.gr.veterinaryapp.model.type.OperationType;
+import pl.gr.veterinaryapp.model.type.VisitType;
 
 import java.math.BigDecimal;
 import java.time.Duration;

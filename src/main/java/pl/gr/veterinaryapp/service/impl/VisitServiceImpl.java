@@ -1,12 +1,18 @@
 package pl.gr.veterinaryapp.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.Link;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.gr.veterinaryapp.common.VisitStatus;
+import pl.gr.veterinaryapp.controller.rest.PetRestController;
+import pl.gr.veterinaryapp.controller.rest.VetRestController;
+import pl.gr.veterinaryapp.controller.rest.VisitRestController;
+import pl.gr.veterinaryapp.mapper.VisitMapper;
+import pl.gr.veterinaryapp.model.dto.VisitResponseDto;
+import pl.gr.veterinaryapp.model.type.VisitStatus;
 import pl.gr.veterinaryapp.exception.IncorrectDataException;
 import pl.gr.veterinaryapp.exception.ResourceNotFoundException;
 import pl.gr.veterinaryapp.model.dto.AvailableVisitDto;
@@ -22,6 +28,7 @@ import pl.gr.veterinaryapp.repository.TreatmentRoomRepository;
 import pl.gr.veterinaryapp.repository.VetRepository;
 import pl.gr.veterinaryapp.repository.VisitRepository;
 import pl.gr.veterinaryapp.service.VisitService;
+import pl.gr.veterinaryapp.validator.UserValidator;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -33,6 +40,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RequiredArgsConstructor
 @Service
 public class VisitServiceImpl implements VisitService {
@@ -43,31 +53,44 @@ public class VisitServiceImpl implements VisitService {
     private final VetRepository vetRepository;
     private final PetRepository petRepository;
     private final TreatmentRoomRepository treatmentRoomRepository;
+    private final VisitMapper visitMapper;
     private final Clock systemClock;
 
     @Override
-    public Visit getVisitById(User user, long id) {
+    public VisitResponseDto getVisitById(User user, long id) {
         Visit visit = visitRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
 
-        if (!isUserAuthorized(user, visit.getPet().getClient())) {
+        if (!UserValidator.isUserAuthorized(user, visit.getPet().getClient())) {
             throw new ResourceNotFoundException("Wrong id.");
         }
 
-        return visit;
+        VisitResponseDto visitResponseDto = visitMapper.toVisitResponseDto(visit);
+        addLinks(visitResponseDto);
+        return visitResponseDto;
     }
 
     @Override
-    public List<Visit> getAllVisits(User user) {
-        return visitRepository.findAll()
+    public List<VisitResponseDto> getAllVisits(User user) {
+        List<Visit> visits = visitRepository.findAll()
                 .stream()
-                .filter(visit -> isUserAuthorized(user, visit.getPet().getClient()))
+                .filter(visit -> UserValidator.isUserAuthorized(user, visit.getPet().getClient()))
                 .collect(Collectors.toList());
+
+        List<VisitResponseDto> visitResponseDtos = visitMapper.toVisitResponseDtos(visits);
+        for (var dto : visitResponseDtos) {
+            addLinks(dto);
+            var link = linkTo(methodOn(VisitRestController.class).getVisitById(user, dto.getId()))
+                    .withSelfRel();
+            dto.add(link);
+        }
+
+        return visitResponseDtos;
     }
 
     @Transactional
     @Override
-    public Visit createVisit(User user, VisitRequestDto visitRequestDto) {
+    public VisitResponseDto createVisit(User user, VisitRequestDto visitRequestDto) {
         var vetId = visitRequestDto.getVetId();
         var startDateTime = visitRequestDto.getStartDateTime();
         var duration = visitRequestDto.getDuration();
@@ -80,7 +103,7 @@ public class VisitServiceImpl implements VisitService {
         Pet pet = petRepository.findById(visitRequestDto.getPetId())
                 .orElseThrow(() -> new IncorrectDataException("Wrong pet id."));
 
-        if (!isUserAuthorized(user, pet.getClient())) {
+        if (!UserValidator.isUserAuthorized(user, pet.getClient())) {
             throw new ResourceNotFoundException("Wrong id.");
         }
 
@@ -91,18 +114,22 @@ public class VisitServiceImpl implements VisitService {
             throw new IncorrectDataException("This vet doesn't work at this hour.");
         }
 
-        var newVisit = new Visit();
-        newVisit.setPet(pet);
-        newVisit.setVet(vet);
-        newVisit.setStartDateTime(startDateTime);
-        newVisit.setDuration(duration);
-        newVisit.setPrice(visitRequestDto.getPrice());
-        newVisit.setVisitType(visitRequestDto.getVisitType());
-        newVisit.setVisitStatus(VisitStatus.SCHEDULED);
-        newVisit.setOperationType(visitRequestDto.getOperationType());
-        newVisit.setTreatmentRoom(treatmentRoom);
+        Visit newVisit = Visit.builder()
+                .pet(pet)
+                .vet(vet)
+                .startDateTime(startDateTime)
+                .duration(duration)
+                .price(visitRequestDto.getPrice())
+                .visitType(visitRequestDto.getVisitType())
+                .visitStatus(VisitStatus.SCHEDULED)
+                .operationType(visitRequestDto.getOperationType())
+                .treatmentRoom(treatmentRoom)
+                .build();
 
-        return visitRepository.save(newVisit);
+        Visit createdVisit = visitRepository.save(newVisit);
+        VisitResponseDto visitResponseDto = visitMapper.toVisitResponseDto(createdVisit);
+        addLinks(visitResponseDto);
+        return visitResponseDto;
     }
 
     private void validateVisitDate(long vetId, OffsetDateTime startDateTime, Duration duration) {
@@ -139,7 +166,7 @@ public class VisitServiceImpl implements VisitService {
 
     @Transactional
     @Override
-    public Visit finalizeVisit(VisitEditDto visitEditDto) {
+    public VisitResponseDto finalizeVisit(VisitEditDto visitEditDto) {
         Visit visit = visitRepository.findById(visitEditDto.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
         if (visitEditDto.getVisitStatus() == VisitStatus.FINISHED
@@ -148,7 +175,10 @@ public class VisitServiceImpl implements VisitService {
             visit.setVisitStatus(visitEditDto.getVisitStatus());
         }
         visit.setVisitDescription(visitEditDto.getDescription());
-        return visit;
+
+        VisitResponseDto visitResponseDto = visitMapper.toVisitResponseDto(visit);
+        addLinks(visitResponseDto);
+        return visitResponseDto;
     }
 
     @Transactional
@@ -172,7 +202,7 @@ public class VisitServiceImpl implements VisitService {
                 .collect(Collectors.toSet());
         var visits = visitRepository.findAllInDateTimeRangeAndVetIdIn(startDateTime, endDateTime, vetIdsSet);
 
-        List<AvailableVisitDto> result = new ArrayList<>();
+        List<AvailableVisitDto> availableVisitDtos = new ArrayList<>();
 
         var visitSlotStart = startDateTime;
         while (visitSlotStart.compareTo(endDateTime) < 0) {
@@ -186,13 +216,19 @@ public class VisitServiceImpl implements VisitService {
                 var availableVisit = new AvailableVisitDto();
                 availableVisit.setVetIds(availableVetIds);
                 availableVisit.setStartDateTime(visitSlotStart);
-                result.add(availableVisit);
+                availableVisitDtos.add(availableVisit);
             }
 
             visitSlotStart = visitSlotEnd;
         }
 
-        return result;
+        for (var availableVisitDto : availableVisitDtos) {
+            for (var vetId : availableVisitDto.getVetIds()) {
+                availableVisitDto.add(createVetLink(vetId));
+            }
+        }
+
+        return availableVisitDtos;
     }
 
     private List<Vet> getVets(Collection<Long> vetIds) {
@@ -238,22 +274,24 @@ public class VisitServiceImpl implements VisitService {
         }
     }
 
-    private boolean isUserAuthorized(User user, Client client) {
-        boolean isClient = user.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch("ROLE_CLIENT"::equalsIgnoreCase);
-        if (isClient) {
-            if (client.getUser() == null) {
-                return false;
-            } else {
-                return client.getUser().getUsername().equalsIgnoreCase(user.getUsername());
-            }
-        }
-        return true;
-    }
-
     public boolean isTimeBetweenIncludingEndPoints(OffsetTime min, OffsetTime max, OffsetDateTime date) {
         return !(date.toOffsetTime().isBefore(min) || date.toOffsetTime().isAfter(max));
+    }
+
+    private Link createVetLink(long id) {
+        return linkTo(VetRestController.class)
+                .slash(id)
+                .withRel("vet");
+    }
+
+    private Link createPetLink(long id) {
+        return linkTo(PetRestController.class)
+                .slash(id)
+                .withRel("pet");
+    }
+
+    private void addLinks(VisitResponseDto visitResponseDto) {
+        visitResponseDto.add(createVetLink(visitResponseDto.getVetId()),
+                createPetLink(visitResponseDto.getPetId()));
     }
 }

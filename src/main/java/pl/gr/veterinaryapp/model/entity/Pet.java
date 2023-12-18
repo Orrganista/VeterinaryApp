@@ -1,5 +1,6 @@
 package pl.gr.veterinaryapp.model.entity;
 
+import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.Entity;
@@ -13,6 +14,7 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 @Data
+@Builder
 @Entity
 @Table(name = "pets")
 public class Pet {

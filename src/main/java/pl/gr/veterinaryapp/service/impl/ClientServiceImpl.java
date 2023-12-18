@@ -7,6 +7,7 @@ import pl.gr.veterinaryapp.exception.IncorrectDataException;
 import pl.gr.veterinaryapp.exception.ResourceNotFoundException;
 import pl.gr.veterinaryapp.mapper.ClientMapper;
 import pl.gr.veterinaryapp.model.dto.ClientRequestDto;
+import pl.gr.veterinaryapp.model.dto.ClientResponseDto;
 import pl.gr.veterinaryapp.model.entity.Client;
 import pl.gr.veterinaryapp.model.entity.VetAppUser;
 import pl.gr.veterinaryapp.repository.ClientRepository;
@@ -20,24 +21,26 @@ import java.util.List;
 public class ClientServiceImpl implements ClientService {
 
     private final ClientRepository clientRepository;
-    private final ClientMapper mapper;
+    private final ClientMapper clientMapper;
     private final UserRepository userRepository;
 
     @Override
-    public Client getClientById(long id) {
+    public ClientResponseDto getClientById(long id) {
         System.out.println("XXX");
-        return clientRepository.findById(id)
+        Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+        return clientMapper.toClientResponseDto(client);
     }
 
     @Override
-    public List<Client> getAllClients() {
-        return clientRepository.findAll();
+    public List<ClientResponseDto> getAllClients() {
+        List<Client> clients = clientRepository.findAll();
+        return clientMapper.toClientResponseDtos(clients);
     }
 
     @Transactional
     @Override
-    public Client createClient(ClientRequestDto clientRequestDTO) {
+    public ClientResponseDto createClient(ClientRequestDto clientRequestDTO) {
         if (clientRequestDTO.getSurname() == null || clientRequestDTO.getName() == null) {
             throw new IncorrectDataException("Name and Surname should not be null.");
         }
@@ -45,10 +48,10 @@ public class ClientServiceImpl implements ClientService {
         VetAppUser user = userRepository.findByUsername(clientRequestDTO.getUsername())
                 .orElse(null);
 
-        Client client = mapper.toClient(clientRequestDTO);
+        Client client = clientMapper.toClient(clientRequestDTO);
         client.setUser(user);
-
-        return clientRepository.save(client);
+        Client createdClient = clientRepository.save(client);
+        return clientMapper.toClientResponseDto(createdClient);
     }
 
     @Transactional
