@@ -1,6 +1,7 @@
 package pl.gr.veterinaryapp.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -34,6 +35,7 @@ import static pl.gr.veterinaryapp.common.TokenConstants.TOKEN_PREFIX;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TokenServiceImpl implements TokenService {
 
     private final UserRepository userRepository;
@@ -58,6 +60,7 @@ public class TokenServiceImpl implements TokenService {
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
         final String token = jwtTokenUtil.generateToken(authentication);
+        log.info("User {} registered.", loginUser.getUsername());
         return new AuthToken(token);
     }
 
@@ -79,7 +82,7 @@ public class TokenServiceImpl implements TokenService {
         var token = new BlockedToken();
         token.setAuthToken(authToken);
         token.setExpirationTime(OffsetDateTime.ofInstant(expirationDate.toInstant(), ZoneOffset.systemDefault()));
-
+        log.info("User logged out");
         blockedTokenRepository.save(token);
     }
 

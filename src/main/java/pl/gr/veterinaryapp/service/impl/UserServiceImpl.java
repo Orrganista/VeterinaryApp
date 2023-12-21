@@ -1,6 +1,7 @@
 package pl.gr.veterinaryapp.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -44,6 +46,7 @@ public class UserServiceImpl implements UserService {
         newVetAppUser.setUsername(user.getUsername());
         newVetAppUser.setPassword(encoder.encode(user.getPassword()));
         newVetAppUser.setRole(new Role(user.getRole()));
+        log.info("Created user: {}", newVetAppUser.getUsername());
         return userRepository.save(newVetAppUser);
     }
 
