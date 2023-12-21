@@ -61,7 +61,7 @@ public class VetServiceTest {
                 catchThrowableOfType(() -> vetService.getVetById(VET_ID), ResourceNotFoundException.class);
 
         assertThat(thrown)
-                .hasMessage("Wrong id.");
+                .hasMessage("Vet with ID " + VET_ID + " not found.");
 
         verify(vetRepository).findById(eq(VET_ID));
         verifyNoInteractions(mapper);
@@ -84,7 +84,7 @@ public class VetServiceTest {
     }
 
     @Test
-    void saveVet_CorrectData_saved() {
+    void createVet_CorrectData_Created() {
         VetRequestDto request = new VetRequestDto();
         request.setName("test");
         request.setSurname("test");
@@ -92,7 +92,7 @@ public class VetServiceTest {
         vet.setName("test");
         vet.setSurname("test");
 
-        when(mapper.map(any(VetRequestDto.class))).thenReturn(vet);
+        when(mapper.toVet(any(VetRequestDto.class))).thenReturn(vet);
         when(vetRepository.save(any(Vet.class))).thenReturn(vet);
 
         var result = vetService.createVet(request);
@@ -102,11 +102,11 @@ public class VetServiceTest {
                 .isEqualTo(vet);
 
         verify(vetRepository).save(eq(vet));
-        verify(mapper).map(request);
+        verify(mapper).toVet(request);
     }
 
     @Test
-    void saveVet_NameNull_ExceptionThrown() {
+    void createVet_NameNull_ExceptionThrown() {
         VetRequestDto request = new VetRequestDto();
         request.setSurname("test");
 
@@ -120,7 +120,7 @@ public class VetServiceTest {
     }
 
     @Test
-    void saveVet_SurnameNull_ExceptionThrown() {
+    void createVet_SurnameNull_ExceptionThrown() {
         VetRequestDto request = new VetRequestDto();
         request.setName("test");
 
@@ -154,7 +154,7 @@ public class VetServiceTest {
                 catchThrowableOfType(() -> vetService.deleteVet(VET_ID), ResourceNotFoundException.class);
 
         assertThat(thrown)
-                .hasMessage("Wrong id.");
+                .hasMessage("Vet with ID " + VET_ID + " not found.");
 
         verify(vetRepository).findById(eq(VET_ID));
         verifyNoInteractions(mapper);

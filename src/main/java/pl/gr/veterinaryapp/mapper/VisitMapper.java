@@ -17,7 +17,7 @@ public interface VisitMapper {
             @Mapping(source = "pet.id", target = "petId"),
             @Mapping(source = "treatmentRoom.id", target = "treatmentRoomId")
     })
-    VisitResponseDto map(Visit visit);
+    VisitResponseDto toVisitResponseDto(Visit visit);
 
-    List<VisitResponseDto> mapAsList(Collection<Visit> visit);
+    List<VisitResponseDto> toVisitResponseDtos(Collection<Visit> visit);
 }

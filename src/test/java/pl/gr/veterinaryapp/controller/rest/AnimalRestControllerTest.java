@@ -13,14 +13,16 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import pl.gr.veterinaryapp.config.WebSecurityConfig;
 import pl.gr.veterinaryapp.jwt.JwtAuthenticationFilter;
+import pl.gr.veterinaryapp.mapper.AnimalMapper;
 import pl.gr.veterinaryapp.model.dto.AnimalRequestDto;
+import pl.gr.veterinaryapp.model.dto.AnimalResponseDto;
+import pl.gr.veterinaryapp.model.dto.ClientResponseDto;
 import pl.gr.veterinaryapp.model.entity.Animal;
 import pl.gr.veterinaryapp.service.AnimalService;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -43,6 +45,9 @@ class AnimalRestControllerTest {
     @MockBean
     private AnimalService animalService;
 
+    @MockBean
+    private AnimalMapper animalMapper;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -51,64 +56,75 @@ class AnimalRestControllerTest {
 
     @Test
     @WithMockUser
-    void addAnimal_CorrectData_Created() throws Exception {
-        AnimalRequestDto animalRequest = new AnimalRequestDto();
+    void createAnimal_CorrectData_Created() throws Exception {
+        var animalRequest = new AnimalRequestDto();
         animalRequest.setSpecies(SPECIES);
 
-        Animal animal = new Animal();
-        animal.setSpecies(animalRequest.getSpecies());
+        var animal = new Animal();
+
+        var animalResponse = new AnimalResponseDto();
+        animalResponse.setSpecies(animalRequest.getSpecies());
 
         when(animalService.createAnimal(any(AnimalRequestDto.class))).thenReturn(animal);
+        when(animalMapper.toAnimalResponseDto(any(Animal.class))).thenReturn(animalResponse);
 
         mockMvc.perform(post("/api/animals")
-                .with(csrf())
-                .content(objectMapper.writeValueAsString(animalRequest))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .with(csrf())
+                        .content(objectMapper.writeValueAsString(animalRequest))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.species").value(SPECIES));
 
         verify(animalService).createAnimal(animalRequest);
+        verify(animalMapper).toAnimalResponseDto(eq(animal));
     }
 
     @Test
     @WithMockUser
-    void getAnimal_CorrectData_Created() throws Exception {
-        Animal animal = new Animal();
-        animal.setSpecies(SPECIES);
-        animal.setId(ID);
+    void getAnimalById_CorrectData_Returned() throws Exception {
+        var animal = new Animal();
+
+        var animalResponse = new AnimalResponseDto();
+        animalResponse.setSpecies(SPECIES);
+        animalResponse.setId(ID);
 
         when(animalService.getAnimalById(anyLong())).thenReturn(animal);
+        when(animalMapper.toAnimalResponseDto(any(Animal.class))).thenReturn(animalResponse);
 
         mockMvc.perform(get("/api/animals/{id}", ID)
-                .content(objectMapper.writeValueAsString(animal))
-                .contentType(MediaType.APPLICATION_JSON))
+                        .content(objectMapper.writeValueAsString(animal))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ID))
                 .andExpect(jsonPath("$.species").value(SPECIES));
 
         verify(animalService).getAnimalById(1);
+        verify(animalMapper).toAnimalResponseDto(eq(animal));
     }
 
     @Test
     @WithMockUser
     void getAllAnimals_CorrectData_Returned() throws Exception {
-        List<Animal> animals = List.of(createNewAnimal("CAT"),
-                createNewAnimal("DOG"));
+        var animals = List.of(new Animal(), new Animal());
+
+        var animalResponse = List.of(createNewAnimalResponse("CAT"), createNewAnimalResponse("DOG"));
 
         when(animalService.getAllAnimals()).thenReturn(animals);
+        when(animalMapper.toAnimalResponseDtos(anyList())).thenReturn(animalResponse);
 
         mockMvc.perform(get("/api/animals", ID)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.[0].species").value("CAT"))
                 .andExpect(jsonPath("$.[1].species").value("DOG"));
 
         verify(animalService).getAllAnimals();
+        verify(animalMapper).toAnimalResponseDtos(eq(animals));
     }
 
-    private Animal createNewAnimal(String species) {
-        var animal = new Animal();
-        animal.setSpecies(species);
-        return animal;
+    private AnimalResponseDto createNewAnimalResponse(String species) {
+        var animalResponse = new AnimalResponseDto();
+        animalResponse.setSpecies(species);
+        return animalResponse;
     }
 }

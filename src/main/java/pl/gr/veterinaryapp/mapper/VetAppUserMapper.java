@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
-import pl.gr.veterinaryapp.model.dto.UserDto;
+import pl.gr.veterinaryapp.model.dto.VetUserDto;
 import pl.gr.veterinaryapp.model.entity.VetAppUser;
 
 import java.util.Collection;
@@ -17,7 +17,7 @@ public interface VetAppUserMapper {
             @Mapping(source = "username", target = "username"),
             @Mapping(source = "role.id", target = "role")
     })
-    UserDto map(VetAppUser pet);
+    VetUserDto toVetUserDto(VetAppUser pet);
 
-    List<UserDto> mapAsList(Collection<VetAppUser> users);
+    List<VetUserDto> toVetUserDtos(Collection<VetAppUser> users);
 }

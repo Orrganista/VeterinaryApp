@@ -38,7 +38,7 @@ public class PetServiceImpl implements PetService {
     @Override
     public Pet getPetById(User user, long id) {
         Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+                .orElseThrow(() -> new ResourceNotFoundException("Pet with ID " + id + " not found."));
 
         if (!isUserAuthorized(user, pet.getClient())) {
             throw new ResourceNotFoundException("Wrong id.");
@@ -80,7 +80,7 @@ public class PetServiceImpl implements PetService {
     @Override
     public void deletePet(long id) {
         Pet result = petRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+                .orElseThrow(() -> new ResourceNotFoundException("Pet with ID " + id + " not found."));
         petRepository.delete(result);
     }
 

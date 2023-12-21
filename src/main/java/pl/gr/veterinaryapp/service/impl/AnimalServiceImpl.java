@@ -18,12 +18,12 @@ import java.util.List;
 public class AnimalServiceImpl implements AnimalService {
 
     private final AnimalRepository animalRepository;
-    private final AnimalMapper mapper;
+    private final AnimalMapper animalMapper;
 
     @Override
     public Animal getAnimalById(long id) {
         return animalRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+                .orElseThrow(() -> new ResourceNotFoundException("Animal with ID " + id + " not found."));
     }
 
     @Transactional
@@ -31,17 +31,17 @@ public class AnimalServiceImpl implements AnimalService {
     public Animal createAnimal(AnimalRequestDto animalRequestDto) {
         var animal = animalRepository.findBySpecies(animalRequestDto.getSpecies());
         if (animal.isPresent()) {
-            throw new IncorrectDataException("Species exists.");
+            throw new IncorrectDataException("Species " + animalRequestDto.getSpecies() + " already exists.");
         }
 
-        return animalRepository.save(mapper.map(animalRequestDto));
+        return animalRepository.save(animalMapper.toAnimal(animalRequestDto));
     }
 
     @Transactional
     @Override
     public void deleteAnimal(long id) {
         Animal animal = animalRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+                .orElseThrow(() -> new ResourceNotFoundException("Animal with ID " + id + " not found."));
         animalRepository.delete(animal);
     }
 

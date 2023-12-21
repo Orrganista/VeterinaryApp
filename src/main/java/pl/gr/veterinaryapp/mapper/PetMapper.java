@@ -17,7 +17,7 @@ public interface PetMapper {
             @Mapping(source = "animal.id", target = "animalId"),
             @Mapping(source = "client.id", target = "clientId")
     })
-    PetResponseDto map(Pet pet);
+    PetResponseDto toPetResponseDto(Pet pet);
 
-    List<PetResponseDto> mapAsList(Collection<Pet> pets);
+    List<PetResponseDto> toPetResponseDtos(Collection<Pet> pets);
 }

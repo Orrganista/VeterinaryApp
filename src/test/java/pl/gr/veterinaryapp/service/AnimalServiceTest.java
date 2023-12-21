@@ -62,7 +62,7 @@ class AnimalServiceTest {
                 catchThrowableOfType(() -> animalService.getAnimalById(ANIMAL_ID), ResourceNotFoundException.class);
 
         assertThat(thrown)
-                .hasMessage("Wrong id.");
+                .hasMessage("Animal with ID " + ANIMAL_ID + " not found.");
 
         verify(animalRepository).findById(eq(ANIMAL_ID));
         verifyNoInteractions(mapper);
@@ -76,7 +76,7 @@ class AnimalServiceTest {
         animal.setSpecies("test");
 
         when(animalRepository.findBySpecies(anyString())).thenReturn(Optional.empty());
-        when(mapper.map(any(AnimalRequestDto.class))).thenReturn(animal);
+        when(mapper.toAnimal(any(AnimalRequestDto.class))).thenReturn(animal);
         when(animalRepository.save(any(Animal.class))).thenReturn(animal);
 
         var result = animalService.createAnimal(animalDTO);
@@ -87,7 +87,7 @@ class AnimalServiceTest {
 
         verify(animalRepository).save(eq(animal));
         verify(animalRepository).findBySpecies(eq("test"));
-        verify(mapper).map(eq(animalDTO));
+        verify(mapper).toAnimal(eq(animalDTO));
     }
 
     @Test
@@ -103,7 +103,7 @@ class AnimalServiceTest {
                 catchThrowableOfType(() -> animalService.createAnimal(animalDTO), IncorrectDataException.class);
 
         assertThat(thrown)
-                .hasMessage("Species exists.");
+                .hasMessage("Species " + animal.getSpecies() + " already exists.");
 
         verify(animalRepository).findBySpecies(eq("test"));
         verifyNoInteractions(mapper);
@@ -131,7 +131,7 @@ class AnimalServiceTest {
                 catchThrowableOfType(() -> animalService.deleteAnimal(ANIMAL_ID), ResourceNotFoundException.class);
 
         assertThat(thrown)
-                .hasMessage("Wrong id.");
+                .hasMessage("Animal with ID " + ANIMAL_ID + " not found.");
 
         verify(animalRepository).findById(eq(ANIMAL_ID));
         verifyNoInteractions(mapper);

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.gr.veterinaryapp.mapper.VetAppUserMapper;
-import pl.gr.veterinaryapp.model.dto.UserDto;
+import pl.gr.veterinaryapp.model.dto.VetUserDto;
 import pl.gr.veterinaryapp.service.UserService;
 
 import java.util.List;
@@ -20,16 +20,16 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
-    private final VetAppUserMapper mapper;
+    private final VetAppUserMapper vetAppUserMapper;
 
     @GetMapping
-    public List<UserDto> getAllUsers() {
-        return mapper.mapAsList(userService.getAllUsers());
+    public List<VetUserDto> getAllUsers() {
+        return vetAppUserMapper.toVetUserDtos(userService.getAllUsers());
     }
 
     @PostMapping
-    public UserDto createUser(@RequestBody UserDto user) {
-        return mapper.map(userService.createUser(user));
+    public VetUserDto createUser(@RequestBody VetUserDto user) {
+        return vetAppUserMapper.toVetUserDto(userService.createUser(user));
     }
 
     @DeleteMapping("/{id}")
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public UserDto getUser(@PathVariable long id) {
-        return mapper.map(userService.getUser(id));
+    public VetUserDto getUserById(@PathVariable long id) {
+        return vetAppUserMapper.toVetUserDto(userService.getUserById(id));
     }
 }

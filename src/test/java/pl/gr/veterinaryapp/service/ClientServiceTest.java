@@ -66,7 +66,7 @@ class ClientServiceTest {
                 catchThrowableOfType(() -> clientService.getClientById(CLIENT_ID), ResourceNotFoundException.class);
 
         assertThat(thrown)
-                .hasMessage("Wrong id.");
+                .hasMessage("Client with ID " + CLIENT_ID + " not found.");
 
         verify(clientRepository).findById(eq(CLIENT_ID));
         verifyNoInteractions(mapper, userRepository);
@@ -81,7 +81,7 @@ class ClientServiceTest {
         client.setName(CLIENT_NAME);
         client.setSurname(CLIENT_SURNAME);
 
-        when(mapper.map(any(ClientRequestDto.class))).thenReturn(client);
+        when(mapper.toClient(any(ClientRequestDto.class))).thenReturn(client);
         when(clientRepository.save(any(Client.class))).thenReturn(client);
 
         var result = clientService.createClient(clientDTO);
@@ -91,7 +91,7 @@ class ClientServiceTest {
                 .isEqualTo(client);
 
         verify(clientRepository).save(eq(client));
-        verify(mapper).map(eq(clientDTO));
+        verify(mapper).toClient(eq(clientDTO));
     }
 
     @Test
@@ -130,7 +130,7 @@ class ClientServiceTest {
                 catchThrowableOfType(() -> clientService.deleteClient(CLIENT_ID), ResourceNotFoundException.class);
 
         assertThat(thrown)
-                .hasMessage("Wrong id.");
+                .hasMessage("Client with ID " + CLIENT_ID + " not found.");
 
         verify(clientRepository).findById(eq(CLIENT_ID));
         verifyNoInteractions(mapper, userRepository);

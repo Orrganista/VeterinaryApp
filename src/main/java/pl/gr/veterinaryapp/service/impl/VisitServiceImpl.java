@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static pl.gr.veterinaryapp.validator.UserValidator.isUserAuthorized;
+
 @RequiredArgsConstructor
 @Service
 public class VisitServiceImpl implements VisitService {
@@ -236,21 +238,6 @@ public class VisitServiceImpl implements VisitService {
         for (var visit : visits) {
             visit.setVisitStatus(VisitStatus.EXPIRED);
         }
-    }
-
-    private boolean isUserAuthorized(User user, Client client) {
-        boolean isClient = user.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch("ROLE_CLIENT"::equalsIgnoreCase);
-        if (isClient) {
-            if (client.getUser() == null) {
-                return false;
-            } else {
-                return client.getUser().getUsername().equalsIgnoreCase(user.getUsername());
-            }
-        }
-        return true;
     }
 
     public boolean isTimeBetweenIncludingEndPoints(OffsetTime min, OffsetTime max, OffsetDateTime date) {
