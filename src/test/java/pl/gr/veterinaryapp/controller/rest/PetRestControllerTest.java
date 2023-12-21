@@ -83,7 +83,7 @@ class PetRestControllerTest {
         var petResponse = preparePetResponse(pet);
 
         when(petService.createPet(any(User.class), any(PetRequestDto.class))).thenReturn(pet);
-        when(petMapper.map(any(Pet.class))).thenReturn(petResponse);
+        when(petMapper.toPetResponseDto(any(Pet.class))).thenReturn(petResponse);
 
         var result = mockMvc.perform(post("/api/pets")
                 .with(csrf())
@@ -92,13 +92,13 @@ class PetRestControllerTest {
 
         verifyJson(result, petResponse);
 
-        verify(petMapper).map(eq(pet));
+        verify(petMapper).toPetResponseDto(eq(pet));
         verify(petService).createPet(any(User.class), eq(petRequest));
     }
 
     @Test
     @WithMockUser
-    void getPet_CorrectData_Returned() throws Exception {
+    void getPetById_CorrectData_Returned() throws Exception {
         Animal animal = new Animal();
         animal.setId(ID);
         Client client = new Client();
@@ -109,14 +109,14 @@ class PetRestControllerTest {
         var petResponse = preparePetResponse(pet);
 
         when(petService.getPetById(any(User.class), anyLong())).thenReturn(pet);
-        when(petMapper.map(any(Pet.class))).thenReturn(petResponse);
+        when(petMapper.toPetResponseDto(any(Pet.class))).thenReturn(petResponse);
 
         var result = mockMvc.perform(get("/api/pets/{id}", ID)
                 .contentType(MediaType.APPLICATION_JSON));
 
         verifyJson(result, petResponse);
 
-        verify(petMapper).map(eq(pet));
+        verify(petMapper).toPetResponseDto(eq(pet));
         verify(petService).getPetById(any(User.class), eq(ID));
     }
 
@@ -150,7 +150,7 @@ class PetRestControllerTest {
             petResponses.add(petResponse);
         }
 
-        when(petMapper.mapAsList(anyList())).thenReturn(petResponses);
+        when(petMapper.toPetResponseDtos(anyList())).thenReturn(petResponses);
         when(petService.getAllPets(any(User.class))).thenReturn(pets);
 
         var result = mockMvc.perform(get("/api/pets", ID)
@@ -162,7 +162,7 @@ class PetRestControllerTest {
         }
 
         verify(petService).getAllPets(any(User.class));
-        verify(petMapper).mapAsList(eq(pets));
+        verify(petMapper).toPetResponseDtos(eq(pets));
     }
 
     private void verifyJson(ResultActions result, PetResponseDto petResponse) throws Exception {

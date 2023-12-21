@@ -18,12 +18,12 @@ import java.util.List;
 public class VetServiceImpl implements VetService {
 
     private final VetRepository vetRepository;
-    private final VetMapper mapper;
+    private final VetMapper vetMapper;
 
     @Override
     public Vet getVetById(long id) {
         return vetRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+                .orElseThrow(() -> new ResourceNotFoundException("Vet with ID " + id + " not found."));
     }
 
     @Override
@@ -37,14 +37,14 @@ public class VetServiceImpl implements VetService {
         if (vetRequestDTO.getSurname() == null || vetRequestDTO.getName() == null) {
             throw new IncorrectDataException("Name and Surname cannot be null.");
         }
-        return vetRepository.save(mapper.map(vetRequestDTO));
+        return vetRepository.save(vetMapper.toVet(vetRequestDTO));
     }
 
     @Transactional
     @Override
     public void deleteVet(long id) {
         Vet result = vetRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+                .orElseThrow(() -> new ResourceNotFoundException("Vet with ID " + id + " not found."));
         vetRepository.delete(result);
     }
 }

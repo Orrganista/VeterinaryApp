@@ -20,14 +20,14 @@ import java.util.List;
 public class ClientServiceImpl implements ClientService {
 
     private final ClientRepository clientRepository;
-    private final ClientMapper mapper;
+    private final ClientMapper clientMapper;
     private final UserRepository userRepository;
 
     @Override
     public Client getClientById(long id) {
         System.out.println("XXX");
         return clientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+                .orElseThrow(() -> new ResourceNotFoundException("Client with ID " + id + " not found."));
     }
 
     @Override
@@ -45,7 +45,7 @@ public class ClientServiceImpl implements ClientService {
         VetAppUser user = userRepository.findByUsername(clientRequestDTO.getUsername())
                 .orElse(null);
 
-        Client client = mapper.map(clientRequestDTO);
+        Client client = clientMapper.toClient(clientRequestDTO);
         client.setUser(user);
 
         return clientRepository.save(client);
@@ -55,7 +55,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public void deleteClient(long id) {
         Client result = clientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+                .orElseThrow(() -> new ResourceNotFoundException("Client with ID " + id + " not found."));
         clientRepository.delete(result);
     }
 }

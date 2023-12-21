@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.gr.veterinaryapp.exception.IncorrectDataException;
 import pl.gr.veterinaryapp.exception.ResourceNotFoundException;
-import pl.gr.veterinaryapp.model.dto.UserDto;
+import pl.gr.veterinaryapp.model.dto.VetUserDto;
 import pl.gr.veterinaryapp.model.entity.Role;
 import pl.gr.veterinaryapp.model.entity.VetAppUser;
 import pl.gr.veterinaryapp.repository.UserRepository;
@@ -28,17 +28,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public VetAppUser getUser(long id) {
+    public VetAppUser getUserById(long id) {
         return userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
+                .orElseThrow(() -> new ResourceNotFoundException("User with ID " + id + " not found."));
     }
 
     @Override
     @Transactional
-    public VetAppUser createUser(UserDto user) {
+    public VetAppUser createUser(VetUserDto user) {
         userRepository.findByUsername(user.getUsername())
                 .ifPresent(u -> {
-                    throw new IncorrectDataException("Username exists.");
+                    throw new IncorrectDataException("Username " + user.getUsername() + " exists.");
                 });
         VetAppUser newVetAppUser = new VetAppUser();
         newVetAppUser.setUsername(user.getUsername());
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUser(long id) {
         var user = userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Wrong id."));
+                .orElseThrow(() -> new UsernameNotFoundException("User with ID " + id + " not found."));
         userRepository.delete(user);
     }
 }

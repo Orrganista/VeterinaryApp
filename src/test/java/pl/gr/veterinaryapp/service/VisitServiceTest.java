@@ -535,8 +535,8 @@ class VisitServiceTest {
         var treatmentRoom = new TreatmentRoom();
         var pet = new Pet();
         var vet = new Vet();
-        vet.setWorkStartTime(OffsetTime.of(13,0,0,0,ZoneOffset.UTC));
-        vet.setWorkEndTime(OffsetTime.of(14,0,0,0,ZoneOffset.UTC));
+        vet.setWorkStartTime(OffsetTime.of(13, 0, 0, 0, ZoneOffset.UTC));
+        vet.setWorkEndTime(OffsetTime.of(14, 0, 0, 0, ZoneOffset.UTC));
 
 
         when(vetRepository.findById(anyLong())).thenReturn(Optional.of(vet));

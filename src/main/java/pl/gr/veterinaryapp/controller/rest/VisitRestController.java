@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+import static pl.gr.veterinaryapp.helper.LinkBuilder.addLinks;
+import static pl.gr.veterinaryapp.helper.LinkBuilder.createVetLink;
 
 @RequiredArgsConstructor
 @RequestMapping("api/visits")
@@ -41,13 +43,13 @@ public class VisitRestController {
     private final VisitMapper mapper;
 
     @DeleteMapping(path = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public void delete(@PathVariable long id) {
+    public void deleteVisit(@PathVariable long id) {
         visitService.deleteVisit(id);
     }
 
     @GetMapping(path = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
-    public VisitResponseDto getVisit(@AuthenticationPrincipal User user, @PathVariable long id) {
-        var visit = mapper.map(visitService.getVisitById(user, id));
+    public VisitResponseDto getVisitById(@AuthenticationPrincipal User user, @PathVariable long id) {
+        var visit = mapper.toVisitResponseDto(visitService.getVisitById(user, id));
         addLinks(visit);
         return visit;
     }
@@ -80,11 +82,11 @@ public class VisitRestController {
 
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     public List<VisitResponseDto> getAllVisits(@AuthenticationPrincipal User user) {
-        var visits = mapper.mapAsList(visitService.getAllVisits(user));
+        var visits = mapper.toVisitResponseDtos(visitService.getAllVisits(user));
 
         for (var visit : visits) {
             addLinks(visit);
-            var link = linkTo(methodOn(VisitRestController.class).getVisit(user, visit.getId()))
+            var link = linkTo(methodOn(VisitRestController.class).getVisitById(user, visit.getId()))
                     .withSelfRel();
             visit.add(link);
         }
@@ -95,32 +97,15 @@ public class VisitRestController {
     @PostMapping(produces = MediaTypes.HAL_JSON_VALUE)
     public VisitResponseDto createVisit(@AuthenticationPrincipal User user,
                                         @RequestBody VisitRequestDto visitRequestDto) {
-        var visit = mapper.map(visitService.createVisit(user, visitRequestDto));
+        var visit = mapper.toVisitResponseDto(visitService.createVisit(user, visitRequestDto));
         addLinks(visit);
         return visit;
     }
 
     @PatchMapping(produces = MediaTypes.HAL_JSON_VALUE)
     public VisitResponseDto finalizeVisit(@RequestBody VisitEditDto visitEditDto) {
-        var visit = mapper.map(visitService.finalizeVisit(visitEditDto));
+        var visit = mapper.toVisitResponseDto(visitService.finalizeVisit(visitEditDto));
         addLinks(visit);
         return visit;
-    }
-
-    public Link createVetLink(long id) {
-        return linkTo(VetRestController.class)
-                .slash(id)
-                .withRel("vet");
-    }
-
-    public Link createPetLink(long id) {
-        return linkTo(PetRestController.class)
-                .slash(id)
-                .withRel("pet");
-    }
-
-    public void addLinks(VisitResponseDto visitResponseDto) {
-        visitResponseDto.add(createVetLink(visitResponseDto.getVetId()),
-                createPetLink(visitResponseDto.getPetId()));
     }
 }
