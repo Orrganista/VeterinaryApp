@@ -1,6 +1,7 @@
 package pl.gr.veterinaryapp.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.gr.veterinaryapp.exception.IncorrectDataException;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class ClientServiceImpl implements ClientService {
 
     private final ClientRepository clientRepository;
@@ -48,6 +50,7 @@ public class ClientServiceImpl implements ClientService {
         Client client = mapper.map(clientRequestDTO);
         client.setUser(user);
 
+        log.info("Created client: {}", client.getName() + " " + client.getSurname());
         return clientRepository.save(client);
     }
 
@@ -57,5 +60,6 @@ public class ClientServiceImpl implements ClientService {
         Client result = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Wrong id."));
         clientRepository.delete(result);
+        log.info("Deleted client with ID: {}", result.getId());
     }
 }

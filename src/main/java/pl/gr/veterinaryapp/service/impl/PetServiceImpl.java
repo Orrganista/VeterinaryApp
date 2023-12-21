@@ -1,6 +1,7 @@
 package pl.gr.veterinaryapp.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class PetServiceImpl implements PetService {
 
     private final PetRepository petRepository;
@@ -72,7 +74,7 @@ public class PetServiceImpl implements PetService {
         newPet.setBirthDate(petRequestDto.getBirthDate());
         newPet.setAnimal(animal);
         newPet.setClient(client);
-
+        log.info("Created pet: {}", newPet.getName());
         return petRepository.save(newPet);
     }
 
